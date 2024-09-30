@@ -16,8 +16,20 @@ const User = sequelize.define('user', {
         type: DataTypes.STRING,
         allowNull: true,
     },
-    userImg: {
+    profilePicture: {
         type: DataTypes.STRING,
+        allowNull: true,
+    },
+    defaultPicture: {
+        type: DataTypes.STRING,
+        allowNull: true,
+    },
+    createdAt: {
+        type: DataTypes.DATE,
+        allowNull: false,
+    },
+    updatedAt: {
+        type: DataTypes.DATE,
         allowNull: false,
     },
     email: {
@@ -50,5 +62,10 @@ User.beforeUpdate(async (user) => {
         user.password = await bcrypt.hash(user.password, salt);
     }
 });
+
+User.prototype.comparePassword = function(password) {
+    return bcrypt.compare(password, this.password);
+};
+
 
 module.exports = User;
