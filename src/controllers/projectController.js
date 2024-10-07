@@ -12,7 +12,7 @@ exports.createProject = async (req, res, next) => {
 
 exports.getProject = async (req, res, next) => {
     try {
-        const project = await Project.findByPk(req.params.id);
+        const project = await Project.findAll();
         if (!project) {
             return res.status(404).json({ message: 'Project not found' });
         }

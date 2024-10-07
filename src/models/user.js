@@ -16,14 +16,14 @@ const User = sequelize.define('user', {
         type: DataTypes.STRING,
         allowNull: true,
     },
-    profilePicture: {
-        type: DataTypes.STRING,
-        allowNull: true,
-    },
-    defaultPicture: {
-        type: DataTypes.STRING,
-        allowNull: true,
-    },
+    // profilePicture: {
+    //     type: DataTypes.STRING,
+    //     allowNull: true,
+    // },
+    // defaultPicture: {
+    //     type: DataTypes.STRING,
+    //     allowNull: true,
+    // },
     createdAt: {
         type: DataTypes.DATE,
         allowNull: false,
