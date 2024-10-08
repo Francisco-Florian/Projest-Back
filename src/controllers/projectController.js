@@ -3,12 +3,21 @@ const { Project } = require('../models');
 exports.createProject = async (req, res, next) => {
     try {
         const { projectName, createdBy, deadline, projectStatus } = req.body;
+        
+        // Vérifier si un projet avec le même nom existe déjà dans le modèle Project
+        const existingProject = await Project.findOne({ where: { projectName } });
+        if (existingProject) {
+            return res.status(400).json({ message: 'Name is already used' });
+        }
+        
+        // Créer le projet s'il n'existe pas encore
         const project = await Project.create({ projectName, createdBy, deadline, projectStatus });
         res.status(201).json({ message: 'Project created successfully', projectId: project.id });
     } catch (err) {
         next(err);
     }
 };
+
 
 exports.getProject = async (req, res, next) => {
     try {
