@@ -5,6 +5,10 @@ require('dotenv').config();
 exports.register = async (req, res, next) => {
     try {
         const { email, password } = req.body;
+        const existingUser = await User.findOne({ where: { email } });
+        if (existingUser) {
+            return res.status(400).json({ message: 'Email already exists' });
+        }
         const user = await User.create({ email, password });
         res.status(201).json({message : 'User created successfully', userId: user.id});
     } catch (err) {
