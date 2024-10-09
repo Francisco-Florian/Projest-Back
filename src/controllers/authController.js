@@ -8,9 +8,9 @@ exports.register = async (req, res, next) => {
         /**
          * Finds an existing user in the database by email.
          *
-         * @param {Object} where - The condition to find the user.
-         * @param {string} where.email - The email of the user to find.
-         * @returns {Promise<Object|null>} A promise that resolves to the user object if found, or null if not found.
+         * @param {Object} User - The User model.
+         * @param {Object} email - The email address to search for.
+         * @returns {Promise<Object|null>} - A promise that resolves to the user object if found, or null if not found.
          */
         const existingUser = await User.findOne({ where: { email } });
         if (existingUser) {
@@ -39,7 +39,7 @@ exports.login = async (req, res, next) => {
          *
          * @param {Object} user - The authenticated user object.
          * @param {string} user.id - The unique identifier of the user.
-         * @returns {string} A signed JWT token that expires in 1 day.
+         * @returns {string} - The generated JWT token.
          */
         const token = jwt.sign({ id: user.id }, process.env.JWT_SECRET, { expiresIn: '1d' });
         res.status(200).json({ message: 'Login Successful', token });

@@ -4,18 +4,21 @@ exports.createProject = async (req, res, next) => {
     try {
         const { projectName, createdBy, deadline, projectStatus } = req.body;
         
+        // Vérifier si un projet avec le même nom existe déjà dans le modèle Project
         const existingProject = await Project.findOne({ where: { projectName } });
         if (existingProject) {
             return res.status(400).json({ message: 'Name is already used' });
         }
+        
+        // Créer le projet s'il n'existe pas encore
         /**
          * Creates a new project with the specified details.
-         *
-         * @param {Object} project - The project details.
-         * @param {string} project.projectName - The name of the project.
-         * @param {string} project.createdBy - The creator of the project.
-         * @param {Date} project.deadline - The deadline of the project.
-         * @param {string} project.projectStatus - The status of the project.
+         * 
+         * @param {Object} projectDetails - The details of the project to be created.
+         * @param {string} projectDetails.projectName - The name of the project.
+         * @param {string} projectDetails.createdBy - The creator of the project.
+         * @param {Date} projectDetails.deadline - The deadline of the project.
+         * @param {string} projectDetails.projectStatus - The status of the project.
          * @returns {Promise<Object>} The created project.
          */
         const project = await Project.create({ projectName, createdBy, deadline, projectStatus });
@@ -30,7 +33,7 @@ exports.getProject = async (req, res, next) => {
     try {
         /**
          * Retrieves all projects from the database.
-         *
+         * 
          * @returns {Promise<Array>} A promise that resolves to an array of project objects.
          */
         const project = await Project.findAll();
