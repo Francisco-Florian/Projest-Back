@@ -6,15 +6,15 @@ const Project = sequelize.define('project', {
         type: DataTypes.STRING,
         allowNull: false,
     },
-    // createdBy: {
-    //     type: DataTypes.INTEGER,
-    //     allowNull: true,
-    //     foreignKey: true,
-    //     references: {
-    //         model: 'users',
-    //         key: 'id',
-    //     },
-    // },
+    createdBy: {
+        type: DataTypes.INTEGER,
+        allowNull: true,
+        foreignKey: true,
+        references: {
+            model: 'users',
+            key: 'id',
+        },
+    },
     deadline: {
         type: DataTypes.DATE,
         allowNull: true,

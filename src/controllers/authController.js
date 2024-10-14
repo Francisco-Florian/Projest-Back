@@ -47,3 +47,13 @@ exports.login = async (req, res, next) => {
         next(err);
     }
 };
+
+exports.verifyUser = (req, res) => {
+    res.status(200).json({ 
+        message: "User authenticated", 
+        user: { 
+            id: req.user.id, 
+            email: req.user.email 
+        } 
+    });
+};
