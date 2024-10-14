@@ -8,7 +8,7 @@ const Project = sequelize.define('project', {
     },
     createdBy: {
         type: DataTypes.INTEGER,
-        allowNull: true,
+        allowNull: false,
         foreignKey: true,
         references: {
             model: 'users',

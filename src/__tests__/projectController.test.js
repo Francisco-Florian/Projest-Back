@@ -1,121 +1,159 @@
 const request = require('supertest');
-const express = require('express');
+const app = require('../app'); // Importez votre instance d'application Express
 const { Project } = require('../models');
-const projectController = require('../controllers/projectController');
 
-jest.mock('../models');
-
-const app = express();
-app.use(express.json());
-app.post('/projects', projectController.createProject);
-app.get('/projects', projectController.getProject);
-app.patch('/projects/:id', projectController.updateProject);
-app.delete('/projects/:id', projectController.deleteProject);
+// Mock du middleware d'authentification
+jest.mock('../middleware/authMiddleware', () => (req, res, next) => {
+    req.user = { id: 1 }; // Simule un utilisateur authentifié
+    next();
+});
 
 describe('Project Controller', () => {
+    
+    // Tests pour createProject
+    describe('POST /api/project/create - createProject', () => {
+        it('should create a project successfully', async () => {
+            const mockProjectData = {
+                projectName: 'New Project',
+                deadline: '2024-12-31',
+                projectStatus: 'ongoing',
+            };
 
-  // Test pour la fonction createProject
-  describe('POST /projects', () => {
-    it('should create a project successfully', async () => {
-      const mockProject = { id: 1, projectName: 'Test Project' };
-      Project.findOne.mockResolvedValue(null); // Simule l'absence de projet avec ce nom
-      Project.create.mockResolvedValue(mockProject); // Simule la création du projet
+            const createSpy = jest.spyOn(Project, 'create').mockResolvedValue({
+                id: 1,
+                ...mockProjectData,
+                createdBy: 1,
+            });
 
-      const res = await request(app)
-        .post('/projects')
-        .send({ projectName: 'Test Project', createdBy: 'User1', deadline: '2024-12-01', projectStatus: 'Open' });
+            const response = await request(app)
+                .post('/api/project/create')
+                .send(mockProjectData)
+                .set('Authorization', 'Bearer validToken');
 
-      expect(res.statusCode).toEqual(201);
-      expect(res.body).toHaveProperty('message', 'Project created successfully');
-      expect(res.body).toHaveProperty('projectId', mockProject.id);
+            expect(response.status).toBe(201);
+            expect(response.body.message).toBe('Project created successfully');
+            expect(response.body.projectId).toBe(1);
+            expect(createSpy).toHaveBeenCalledWith(expect.objectContaining({
+                projectName: 'New Project',
+                createdBy: 1,
+                deadline: '2024-12-31',
+                projectStatus: 'ongoing',
+            }));
+        });
+
+        it('should return 400 if project with the same name exists', async () => {
+            jest.spyOn(Project, 'findOne').mockResolvedValue({ id: 1, projectName: 'Existing Project' });
+
+            const response = await request(app)
+                .post('/api/project/create')
+                .send({
+                    projectName: 'Existing Project',
+                    deadline: '2024-12-31',
+                    projectStatus: 'ongoing',
+                })
+                .set('Authorization', 'Bearer validToken');
+
+            expect(response.status).toBe(400);
+            expect(response.body.message).toBe('You already have a project with this name');
+        });
     });
 
-    it('should return 400 if project name already exists', async () => {
-      Project.findOne.mockResolvedValue({ id: 1, projectName: 'Test Project' }); // Simule un projet déjà existant
+    // Tests pour getProject
+    describe('GET /api/project/ - getProject', () => {
+        it('should return a list of projects for the authenticated user', async () => {
+            const mockProjects = [
+                { id: 1, projectName: 'Project 1', createdBy: 1 },
+                { id: 2, projectName: 'Project 2', createdBy: 1 },
+            ];
 
-      const res = await request(app)
-        .post('/projects')
-        .send({ projectName: 'Test Project', createdBy: 'User1', deadline: '2024-12-01', projectStatus: 'Open' });
+            jest.spyOn(Project, 'findAll').mockResolvedValue(mockProjects);
 
-      expect(res.statusCode).toEqual(400);
-      expect(res.body).toHaveProperty('message', 'Name is already used');
-    });
-  });
+            const response = await request(app)
+                .get('/api/project/')
+                .set('Authorization', 'Bearer validToken');
 
-  // Test pour la fonction getProject
-  describe('GET /projects', () => {
-    it('should return all projects successfully', async () => {
-      const mockProjects = [{ id: 1, projectName: 'Test Project 1' }, { id: 2, projectName: 'Test Project 2' }];
-      Project.findAll.mockResolvedValue(mockProjects); // Simule la récupération de plusieurs projets
-
-      const res = await request(app).get('/projects');
-
-      expect(res.statusCode).toEqual(200);
-      expect(res.body).toHaveProperty('message', 'Project found');
-      expect(res.body.project.length).toBe(2); // Simule que deux projets sont trouvés
+            expect(response.status).toBe(200);
+            expect(response.body.projects).toEqual(expect.arrayContaining(mockProjects));
+        });
     });
 
-    it('should return 404 if no projects found', async () => {
-      Project.findAll.mockResolvedValue(null); // Simule l'absence de projets
+    // Tests pour updateProject
+    describe('PATCH /api/project/:id - updateProject', () => {
+        it('should update a project if the user is the owner', async () => {
+            const mockProject = {
+                id: 1,
+                projectName: 'Old Project',
+                createdBy: 1,
+                update: jest.fn().mockResolvedValue(true),
+            };
 
-      const res = await request(app).get('/projects');
+            jest.spyOn(Project, 'findOne').mockResolvedValue(mockProject);
 
-      expect(res.statusCode).toEqual(404);
-      expect(res.body).toHaveProperty('message', 'Project not found');
-    });
-  });
+            const response = await request(app)
+                .patch('/api/project/1')
+                .send({
+                    projectName: 'Updated Project',
+                    deadline: '2024-12-31',
+                    projectStatus: 'completed',
+                })
+                .set('Authorization', 'Bearer validToken');
 
-  // Test pour la fonction updateProject
-  describe('PATCH /projects/:id', () => {
-    it('should update a project successfully', async () => {
-      const mockProject = { id: 1, projectName: 'Updated Project', update: jest.fn() };
-      Project.findByPk.mockResolvedValue(mockProject); // Simule la récupération du projet
+            expect(response.status).toBe(200);
+            expect(response.body.message).toBe('Project updated successfully');
+            expect(mockProject.update).toHaveBeenCalledWith({
+                projectName: 'Updated Project',
+                deadline: '2024-12-31',
+                projectStatus: 'completed',
+            });
+        });
 
-      const res = await request(app)
-        .patch('/projects/1')
-        .send({ projectName: 'Updated Project', deadline: '2024-12-31', projectStatus: 'In Progress' });
+        it('should return 404 if the project is not found or user does not have permission', async () => {
+            jest.spyOn(Project, 'findOne').mockResolvedValue(null);
 
-      expect(res.statusCode).toEqual(200);
-      expect(mockProject.update).toHaveBeenCalledWith({
-        projectName: 'Updated Project',
-        deadline: '2024-12-31',
-        projectStatus: 'In Progress'
-      });
-      expect(res.body).toHaveProperty('message', 'Project updated successfully');
-    });
+            const response = await request(app)
+                .patch('/api/project/1')
+                .send({
+                    projectName: 'Updated Project',
+                    deadline: '2024-12-31',
+                    projectStatus: 'completed',
+                })
+                .set('Authorization', 'Bearer validToken');
 
-    it('should return 404 if project not found', async () => {
-      Project.findByPk.mockResolvedValue(null); // Simule l'absence du projet
-
-      const res = await request(app)
-        .patch('/projects/1')
-        .send({ projectName: 'Updated Project', deadline: '2024-12-31', projectStatus: 'In Progress' });
-
-      expect(res.statusCode).toEqual(404);
-      expect(res.body).toHaveProperty('message', 'Project not found');
-    });
-  });
-
-  // Test pour la fonction deleteProject
-  describe('DELETE /projects/:id', () => {
-    it('should delete a project successfully', async () => {
-      const mockProject = { id: 1, destroy: jest.fn() };
-      Project.findByPk.mockResolvedValue(mockProject); // Simule la récupération du projet
-
-      const res = await request(app).delete('/projects/1');
-
-      expect(res.statusCode).toEqual(200);
-      expect(mockProject.destroy).toHaveBeenCalled();
-      expect(res.body).toHaveProperty('message', 'Project deleted successfully');
+            expect(response.status).toBe(404);
+            expect(response.body.message).toBe('Project not found or you do not have permission to modify it');
+        });
     });
 
-    it('should return 404 if project not found', async () => {
-      Project.findByPk.mockResolvedValue(null); // Simule l'absence du projet
+    // Tests pour deleteProject
+    describe('DELETE /api/project/:id - deleteProject', () => {
+        it('should delete a project if the user is the owner', async () => {
+            const mockProject = {
+                id: 1,
+                projectName: 'Project to delete',
+                createdBy: 1,
+                destroy: jest.fn().mockResolvedValue(true),
+            };
 
-      const res = await request(app).delete('/projects/1');
+            jest.spyOn(Project, 'findOne').mockResolvedValue(mockProject);
 
-      expect(res.statusCode).toEqual(404);
-      expect(res.body).toHaveProperty('message', 'Project not found');
+            const response = await request(app)
+                .delete('/api/project/1')
+                .set('Authorization', 'Bearer validToken');
+
+            expect(response.status).toBe(200);
+            expect(response.body.message).toBe('Project deleted successfully');
+            expect(mockProject.destroy).toHaveBeenCalled();
+        });
+
+        it('should return 404 if the project is not found or user does not have permission', async () => {
+            jest.spyOn(Project, 'findOne').mockResolvedValue(null);
+
+            const response = await request(app)
+                .delete('/api/project/1')
+                .set('Authorization', 'Bearer validToken');
+
+            expect(response.status).toBe(404);
+            expect(response.body.message).toBe('Project not found or you do not have permission to delete it');
+        });
     });
-  });
 });
