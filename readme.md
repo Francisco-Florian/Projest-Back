@@ -24,7 +24,7 @@ Before you begin, make sure you have the following installed on your machine:
 3. Install the necessary dependencies:  
 `npm install`
 
-4. Create a `.env` file at the root of the project to define the following environment variables:
+4. Create a `.env` file at the root of the project to define the following environment variables:  
 `DB_HOST=localhost DB_USER=your_postgres_user DB_PASSWORD=your_postgres_password DB_NAME=projest_db JWT_SECRET=your_secret_key`
 
 5. Make sure PostgreSQL is installed and the database is created:  
@@ -36,7 +36,7 @@ Before you begin, make sure you have the following installed on your machine:
 ## Running the Project
 
 To run the project in development mode, execute the following command:  
-`npm run dev`
+`npm start`
 
 This will start the server locally at: `http://localhost:5000`
 
@@ -59,12 +59,9 @@ This will start the server locally at: `http://localhost:5000`
 
 To deploy the application, follow these steps:
 
-1. Compile and optimize the files for production:  
-`npm run build`
+1. Set up the environment variables on your production server as described in the `.env` file.
 
-2. Set up the environment variables on your production server as described in the `.env` file.
-
-3. Start the application in production mode:  
+2. Start the application in production mode:  
 `npm start`
 
 ## Contributing
