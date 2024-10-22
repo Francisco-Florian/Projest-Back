@@ -79,18 +79,8 @@ exports.updateProject = async (req, res, next) => {
     }
 };
 
-exports.deleteProject = async (req, res, next) => {
+exports.getProjectById = async (req, res, next) => {
     try {
-        /**
-         * Retrieves a project based on the provided ID and the user who created it.
-         *
-         * @param {Object} req - The request object.
-         * @param {Object} req.params - The parameters of the request.
-         * @param {string} req.params.id - The ID of the project to retrieve.
-         * @param {Object} req.user - The user object.
-         * @param {string} req.user.id - The ID of the user who created the project.
-         * @returns {Promise<Object|null>} The project object if found, otherwise null.
-         */
         const project = await Project.findOne({
             where: {
                 id: req.params.id,
@@ -98,7 +88,24 @@ exports.deleteProject = async (req, res, next) => {
             }
         });
         if (!project) {
-            return res.status(404).json({ message: 'Project not found or you do not have permission to delete it' });
+            return res.status(404).json({ message: 'Project not found' });
+        }
+        res.status(200).json({ project });
+    } catch (err) {
+        next(err);
+    }
+};
+
+exports.deleteProject = async (req, res, next) => {
+    try {
+        const project = await Project.findOne({
+            where: {
+                id: req.params.id,
+                createdBy: req.user.id
+            }
+        });
+        if (!project) {
+            return res.status(404).json({ message: 'Project not found' });
         }
         await project.destroy();
         res.status(200).json({ message: 'Project deleted successfully' });

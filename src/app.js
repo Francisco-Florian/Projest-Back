@@ -14,8 +14,8 @@ app.use(express.json());
 
 // Routes
 app.use('/api/auth', authRoutes);
-app.use('/api/project', projectRoutes);
-app.use('/api/task', taskRoutes);
+app.use('/api/project', authMiddleware, projectRoutes);
+app.use('/api/task', authMiddleware, taskRoutes);
 
 
 // Error handler
