@@ -4,6 +4,7 @@ const authMiddleware = require('./middleware/authMiddleware');
 const authRoutes = require('./routes/authRoutes');
 const projectRoutes = require('./routes/projectRoutes');
 const taskRoutes = require('./routes/taskRoutes');
+const taskColumnRoute = require('./routes/taskColumnRoute');
 const errorHandler = require('./middleware/errorHandler');
 const sequelize = require('./config/database');
 
@@ -15,7 +16,8 @@ app.use(express.json());
 // Routes
 app.use('/api/auth', authRoutes);
 app.use('/api/project', authMiddleware, projectRoutes);
-app.use('/api/task', authMiddleware, taskRoutes);
+app.use('/api/project/:projectId/column', authMiddleware, taskColumnRoute);
+app.use('/api/project/:projectId/task', authMiddleware, taskRoutes);
 
 
 // Error handler
@@ -28,3 +30,8 @@ sequelize.sync().then(() => {
         console.log(`Server is running on port ${PORT}`);
     });
 });
+
+
+sequelize.sync({ alter: true })
+    .then(() => console.log('Tables synchronisées avec succès'))
+    .catch(err => console.error('Erreur de synchronisation des tables :', err));
