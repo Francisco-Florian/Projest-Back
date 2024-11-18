@@ -121,7 +121,7 @@ exports.createTaskColumn = async (req, res, next) => {
     try {
         // from headers : token
         // from url : idProject
-        const { title } = req.body;
+        const { title } = req.body; 
 
         // Verifier que le projet existe et que l'utilisateur a les droits pour le projet
 
