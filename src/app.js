@@ -7,7 +7,7 @@ const taskRoutes = require('./routes/taskRoutes');
 const taskColumnRoute = require('./routes/taskColumnRoute');
 const errorHandler = require('./middleware/errorHandler');
 const sequelize = require('./config/database');
-const pg = require('pg');
+
 
 const app = express();
 
