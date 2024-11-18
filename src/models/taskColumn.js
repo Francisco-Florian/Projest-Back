@@ -18,7 +18,6 @@ const taskColumn = sequelize.define('taskColumn', {
     taskColumnPosition: {
         type: DataTypes.INTEGER,
         allowNull: false,
-        unique: true,
     },
 });
 

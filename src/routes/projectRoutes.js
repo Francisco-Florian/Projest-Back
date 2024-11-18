@@ -5,8 +5,10 @@ const authMiddleware = require('../middleware/authMiddleware');
 
 router.post('/create', authMiddleware, projectController.createProject);
 router.get('/', authMiddleware, projectController.getProject);
-router.get('/:id', authMiddleware, projectController.getProjectById);
-router.patch('/:id', authMiddleware, projectController.updateProject);
-router.delete('/:id', authMiddleware, projectController.deleteProject);
+router.get('/:idProject', authMiddleware, projectController.getProjectById);
+router.patch('/:idProject', authMiddleware, projectController.updateProject);
+router.delete('/:idProject', authMiddleware, projectController.deleteProject);
+router.post('/:idProject/column', authMiddleware, projectController.createTaskColumn);
+// router.post('/:idProject/column/:idColumn/task', authMiddleware, projectController.createTask);
 
 module.exports = router;

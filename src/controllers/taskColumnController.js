@@ -1,10 +1,10 @@
-const { taskColumn } = require('../models')
+const TaskColumn = require('../models').TaskColumn;
 
 exports.createTaskColumn = async (req, res, next) => {
     try {
         const { projectId, taskColumnName, taskColumnPosition } = req.body;
-        const taskColumn = await taskColumn.create({ projectId, taskColumnName, taskColumnPosition });
-        res.status(201).json({ message: 'Task column created successfully', taskColumnId: taskColumn.id });
+        const newTaskColumn = await TaskColumn.create({ projectId, taskColumnName, taskColumnPosition });
+        res.status(201).json({ message: 'Task column created successfully', taskColumnId: newTaskColumn.id });
     } catch (err) {
         next(err);
     }
@@ -12,11 +12,20 @@ exports.createTaskColumn = async (req, res, next) => {
 
 exports.getTaskColumn = async (req, res, next) => {
     try {
-        const taskColumn = await taskColumn.findByPk(req.params.id);
-        if (!taskColumn) {
+        const columns = await TaskColumn.findAll();
+        res.status(200).json({ message: 'Task columns found', columns });
+    } catch (err) {
+        next(err);
+    }
+};
+
+exports.getTaskColumnById = async (req, res, next) => {
+    try {
+        const column = await TaskColumn.findByPk(req.params.id);
+        if (!column) {
             return res.status(404).json({ message: 'Task column not found' });
         }
-        res.status(200).json({ message: 'Task column found', taskColumn });
+        res.status(200).json({ message: 'Task column found', column });
     } catch (err) {
         next(err);
     }
@@ -25,12 +34,12 @@ exports.getTaskColumn = async (req, res, next) => {
 exports.updateTaskColumn = async (req, res, next) => {
     try {
         const { taskColumnName, taskColumnPosition } = req.body;
-        const taskColumn = await taskColumn.findByPk(req.params.id);
-        if (!taskColumn) {
+        const column = await TaskColumn.findByPk(req.params.id);
+        if (!column) {
             return res.status(404).json({ message: 'Task column not found' });
         }
-        taskColumn.update({ taskColumnName, taskColumnPosition });
-        res.status(200).json({ message: 'Task column updated successfully', taskColumn });
+        await column.update({ taskColumnName, taskColumnPosition });
+        res.status(200).json({ message: 'Task column updated successfully', column });
     } catch (err) {
         next(err);
     }
@@ -38,11 +47,11 @@ exports.updateTaskColumn = async (req, res, next) => {
 
 exports.deleteTaskColumn = async (req, res, next) => {
     try {
-        const taskColumn = await taskColumn.findByPk(req.params.id);
-        if (!taskColumn) {
+        const column = await TaskColumn.findByPk(req.params.id);
+        if (!column) {
             return res.status(404).json({ message: 'Task column not found' });
         }
-        await taskColumn.destroy();
+        await column.destroy();
         res.status(200).json({ message: 'Task column deleted successfully' });
     } catch (err) {
         next(err);
