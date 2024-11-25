@@ -2,10 +2,8 @@ const express = require('express');
 const router = express.Router();
 const taskColumnController = require('../controllers/taskColumnController');
 
-router.post('/', taskColumnController.createTaskColumn);
-router.get('/', taskColumnController.getTaskColumn);
-router.get('/:id', taskColumnController.getTaskColumnById);
-router.patch('/:id', taskColumnController.updateTaskColumn);
-router.delete('/:id', taskColumnController.deleteTaskColumn);
+router.post('/:idProject/column', taskColumnController.createTaskColumn);
+router.get('/:idProject/column', taskColumnController.getTaskColumn);
+// router.post('/:idProject/column/:idColumn/task', authMiddleware, projectController.createTask);
 
 module.exports = router;

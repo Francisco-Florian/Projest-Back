@@ -1,4 +1,5 @@
 const { Project } = require('../models');
+const TaskColumn = require('../models').TaskColumn;
 
 exports.createProject = async (req, res, next) => {
     try {
@@ -109,31 +110,6 @@ exports.deleteProject = async (req, res, next) => {
         }
         await project.destroy();
         res.status(200).json({ message: 'Project deleted successfully' });
-    } catch (err) {
-        next(err);
-    }
-};
-
-
-// Columns
-
-exports.createTaskColumn = async (req, res, next) => {
-    try {
-        // from headers : token
-        // from url : idProject
-        const { title } = req.body; 
-
-        // Verifier que le projet existe et que l'utilisateur a les droits pour le projet
-
-        
-
-        // recuperer la quantité de colonnes
-        // ajouter la colonne en faisant +1 a taskColumnPosition
-
-        
-
-        const newTaskColumn = await TaskColumn.create({ projectId, taskColumnName, taskColumnPosition });
-        res.status(201).json({ message: 'Task column created successfully', taskColumnId: newTaskColumn.id });
     } catch (err) {
         next(err);
     }

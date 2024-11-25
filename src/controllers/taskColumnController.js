@@ -2,13 +2,46 @@ const TaskColumn = require('../models').TaskColumn;
 
 exports.createTaskColumn = async (req, res, next) => {
     try {
+        // from headers : token
+        // from url : idProject 
         const { projectId, taskColumnName, taskColumnPosition } = req.body;
+
+        // Verifier que le projet existe et que l'utilisateur a les droits pour le projet
+
+        
+
+        // recuperer la quantité de colonnes
+        // ajouter la colonne en faisant +1 a taskColumnPosition
+
+        
+
+        
         const newTaskColumn = await TaskColumn.create({ projectId, taskColumnName, taskColumnPosition });
         res.status(201).json({ message: 'Task column created successfully', taskColumnId: newTaskColumn.id });
     } catch (err) {
         next(err);
     }
 };
+
+// crée les colonnes par défaut
+
+exports.createDefaultColumns = async (projectId) => {
+    // Vérifier si des colonnes existent déjà pour ce projet
+    const existingColumns = await TaskColumn.findAll({ where: { projectId } });
+
+    if (existingColumns.length === 0) {
+        // Créer les colonnes par défaut
+        const defaultColumns = [
+            { taskColumnName: 'To Do', taskColumnPosition: 1, projectId },
+            { taskColumnName: 'Doing', taskColumnPosition: 2, projectId },
+            { taskColumnName: 'Done', taskColumnPosition: 3, projectId },
+        ];
+
+        await TaskColumn.bulkCreate(defaultColumns);
+    }
+};
+
+// recuperer les colonnes
 
 exports.getTaskColumn = async (req, res, next) => {
     try {
@@ -18,6 +51,8 @@ exports.getTaskColumn = async (req, res, next) => {
         next(err);
     }
 };
+
+// recuperer une colonne
 
 exports.getTaskColumnById = async (req, res, next) => {
     try {
@@ -30,6 +65,8 @@ exports.getTaskColumnById = async (req, res, next) => {
         next(err);
     }
 };
+
+// modifier une colonne
 
 exports.updateTaskColumn = async (req, res, next) => {
     try {
@@ -44,6 +81,8 @@ exports.updateTaskColumn = async (req, res, next) => {
         next(err);
     }
 };
+
+// supprimer une colonne
 
 exports.deleteTaskColumn = async (req, res, next) => {
     try {
