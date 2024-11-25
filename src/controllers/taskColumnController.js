@@ -7,15 +7,8 @@ exports.createTaskColumn = async (req, res, next) => {
         const { projectId, taskColumnName, taskColumnPosition } = req.body;
 
         // Verifier que le projet existe et que l'utilisateur a les droits pour le projet
-
-        
-
         // recuperer la quantité de colonnes
         // ajouter la colonne en faisant +1 a taskColumnPosition
-
-        
-
-        
         const newTaskColumn = await TaskColumn.create({ projectId, taskColumnName, taskColumnPosition });
         res.status(201).json({ message: 'Task column created successfully', taskColumnId: newTaskColumn.id });
     } catch (err) {
@@ -28,7 +21,6 @@ exports.createTaskColumn = async (req, res, next) => {
 exports.createDefaultColumns = async (projectId) => {
     // Vérifier si des colonnes existent déjà pour ce projet
     const existingColumns = await TaskColumn.findAll({ where: { projectId } });
-    console.log("qsdfsqfd")
     if (existingColumns.length === 0) {
         // Créer les colonnes par défaut
         const defaultColumns = [
@@ -46,8 +38,8 @@ exports.createDefaultColumns = async (projectId) => {
 
 exports.getTaskColumn = async (req, res, next) => {
     try {
-        await createDefaultColumns(projectId);
-        console.log('default columns created');
+        const projectId = req.params.idProject;
+        await this.createDefaultColumns(projectId);
         const columns = await TaskColumn.findAll();
         res.status(200).json({ message: 'Task columns found', columns });
     } catch (err) {

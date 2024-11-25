@@ -73,3 +73,39 @@ Contributions are welcome! If you would like to improve the project, please foll
 3. Make your changes and commit them: `git commit -m 'Add a new feature'`
 4. Push the branch : `git push origin feature/my-new-feature`
 5. Open a pull request.
+
+
+## Endpoints
+### User
+Fonction | Endpoint | Method | Description
+--- | --- | --- | ---
+Login | /auth/login | POST | Authenticate user and return JWT token
+Register | /auth/register | POST | Register a new user
+
+### Project
+
+Fonction | Endpoint | Method | Description
+--- | --- | --- | ---
+Create | /projects/create | POST | Create a new project
+All projects | /projects | GET | Get all projects
+Project by id | /projects/:idProject | GET | Get a specific project by id
+Update | /projects/:idProject | PATCH | Update a specific project by id
+Delete project | /projects/:idProject | DELETE | Delete a specific projet by id
+
+### Columns
+
+Fonction | Endpoint | Method | Description
+--- | --- | --- | ---
+Add column | /projects/:idProject/columns | POST | Add a new column to a project
+Get Columns | /projects/:idProject/columns | GET | Get all columns of a project
+Update column | /projects/:idProject/columns/:idColumn | PATCH | Update a specific column by id
+Delete column | /projects/:idProject/columns/:idColumn | DELETE | Delete a specific column by id
+
+### Task
+
+Fonction | Endpoint | Method | Description
+--- | --- | --- | ---
+Add task | /projects/:idProject/columns/:idColumn/tasks | POST | Add a new task to a column
+Get tasks | /projects/:idProject/columns/:idColumn/tasks | GET | Get all tasks of a column
+Update task | /projects/:idProject/columns/:idColumn/tasks/:idTask | PATCH | Update a specific task by id
+Delete task | /projects/:idProject/columns/:idColumn/tasks/:idTask | DELETE | Delete a specific task by id
