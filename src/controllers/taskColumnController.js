@@ -40,7 +40,10 @@ exports.getTaskColumn = async (req, res, next) => {
     try {
         const projectId = req.params.idProject;
         await this.createDefaultColumns(projectId);
-        const columns = await TaskColumn.findAll();
+        const columns = await TaskColumn.findAll({
+            where: { projectId },
+            order: [['taskColumnPosition', 'ASC']],
+        });
         res.status(200).json({ message: 'Task columns found', columns });
     } catch (err) {
         next(err);
