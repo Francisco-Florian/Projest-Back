@@ -2,19 +2,44 @@ const TaskColumn = require('../models').TaskColumn;
 
 exports.createTaskColumn = async (req, res, next) => {
     try {
-        // from headers : token
-        // from url : idProject 
-        const { projectId, taskColumnName, taskColumnPosition } = req.body;
+        const { taskColumnName } = req.body;
+        const { idProject } = req.params;
 
-        // Verifier que le projet existe et que l'utilisateur a les droits pour le projet
-        // recuperer la quantité de colonnes
-        // ajouter la colonne en faisant +1 a taskColumnPosition
-        const newTaskColumn = await TaskColumn.create({ projectId, taskColumnName, taskColumnPosition });
-        res.status(201).json({ message: 'Task column created successfully', taskColumnId: newTaskColumn.id });
+        // Vérifier que le projet existe et que l'utilisateur a les droits pour le projet
+        const existingColumns = await TaskColumn.findAll({
+            where: { projectId: idProject },
+        });
+
+        // Vérifier les doublons de nom
+        const duplicateColumn = existingColumns.find(
+            (column) => column.taskColumnName === taskColumnName
+        );
+
+        if (duplicateColumn) {
+            return res.status(400).json({ 
+                message: 'A column with the same name already exists in this project' 
+            });
+        }
+
+        const taskColumnPosition = existingColumns.length + 1;
+
+        // Créer la nouvelle colonne
+        const newTaskColumn = await TaskColumn.create({ 
+            projectId: idProject, 
+            taskColumnName, 
+            taskColumnPosition 
+        });
+
+        res.status(201).json({ 
+            message: 'Task column created successfully', 
+            taskColumnId: newTaskColumn.id 
+        });
     } catch (err) {
         next(err);
     }
 };
+
+
 
 // crée les colonnes par défaut
 
