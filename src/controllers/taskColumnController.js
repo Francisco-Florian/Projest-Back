@@ -109,7 +109,12 @@ exports.updateTaskColumn = async (req, res, next) => {
 
 exports.deleteTaskColumn = async (req, res, next) => {
     try {
-        const column = await TaskColumn.findByPk(req.params.id);
+        const column = await TaskColumn.findOne({
+            where: {
+                id: req.params.idColumn,
+                projectId: req.params.idProject,
+            },
+        });
         if (!column) {
             return res.status(404).json({ message: 'Task column not found' });
         }

@@ -12,10 +12,10 @@ router.delete('/:idProject', authMiddleware, projectController.deleteProject);
 
 // Columns
 
-router.post('/:idProject/columns', taskColumnController.createTaskColumn);
-router.get('/:idProject/columns', taskColumnController.getTaskColumn);
+router.post('/:idProject/columns', authMiddleware, taskColumnController.createTaskColumn);
+router.get('/:idProject/columns', authMiddleware, taskColumnController.getTaskColumn);
 // router.patch('/:idProject/columns/:idColumn', taskColumnController.updateTaskColumn);
-// router.delete('/:idProject/columns/:idColumn', taskColumnController.deleteTaskColumn);
+router.delete('/:idProject/columns/:idColumn', authMiddleware, taskColumnController.deleteTaskColumn);
 
 // Tasks
 // router.post('/:idProject/columns/:idColumn/tasks', authMiddleware, taskColumnController.createTaskColumn);
