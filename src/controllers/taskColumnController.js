@@ -5,6 +5,7 @@ exports.createTaskColumn = async (req, res, next) => {
     try {
         const { taskColumnName } = req.body;
         const { idProject } = req.params;
+        const Project = await project.findByPk(idProject);
 
         // Vérifier que le projet existe
         const existingColumns = await TaskColumn.findAll({
@@ -24,12 +25,15 @@ exports.createTaskColumn = async (req, res, next) => {
 
         const taskColumnPosition = existingColumns.length + 1;
 
-        // Créer la nouvelle colonne
         const newTaskColumn = await TaskColumn.create({
             projectId: idProject,
             taskColumnName,
             taskColumnPosition
         });
+
+        // Mettre à jour la date de modification du projet
+        Project.changed('updatedAt', true);
+        await Project.save();
 
         res.status(201).json({
             message: 'Task column created successfully',
@@ -124,6 +128,7 @@ exports.updateTaskColumn = async (req, res, next) => {
 
 exports.deleteTaskColumn = async (req, res, next) => {
     try {
+        const Project = await project.findByPk(req.params.idProject);
         const column = await TaskColumn.findOne({
             where: {
                 id: req.params.idColumn,
@@ -135,6 +140,9 @@ exports.deleteTaskColumn = async (req, res, next) => {
         }
         await column.destroy();
         res.status(200).json({ message: 'Task column deleted successfully' });
+
+        Project.changed('updatedAt', true);
+        await Project.save();
     } catch (err) {
         next(err);
     }
