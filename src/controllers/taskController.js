@@ -1,27 +1,53 @@
 const { Task } = require('../models');
+const TaskColumn = require('../models/taskColumn');
 
 exports.createTask = async (req, res, next) => {
     try {
-        const { columnId, content } = req.body;
+        const { columnId, taskName, projectId } = req.body;
 
-        if (!columnId || !content) {
-            return res.status(400).json({ message: 'columnId and content are required' });
+        // Vérification des données requises
+        if (!columnId || !taskName || !projectId) {
+            return res.status(400).json({ message: 'columnId, taskName, and projectId are required' });
         }
 
+        // Vérifier si la colonne existe
+        const column = await TaskColumn.findByPk(columnId);
+        if (!column) {
+            return res.status(404).json({ message: 'Column not found' });
+        }
+
+        const duplicateTask = await Task.findOne({ where: { columnId, projectId } });
+        if (duplicateTask) {
+            return res.status(400).json({ message: 'Task already exists in this column' });
+        }
+
+        // Compter le nombre de tâches dans cette colonne
         const taskCount = await Task.count({ where: { columnId } });
         const taskOrder = taskCount + 1;
 
+        // Créer la tâche
         const task = await Task.create({
+            projectId,
             columnId,
-            taskName: content,
+            taskName,
             taskOrder,
         });
 
-        res.status(201).json({ message: 'Task created successfully', taskId: task.id });
+        // Mettre à jour le champ `updatedAt` de la colonne si nécessaire
+        column.changed('updatedAt', true);
+        await column.save();
+
+        // Retourner la tâche créée
+        res.status(201).json({
+            message: 'Task created successfully',
+            task,
+        });
     } catch (err) {
-        next(err);
+        next(err); // Gestion des erreurs
     }
 };
+
+
 
 
 exports.getTask = async (req, res, next) => {
