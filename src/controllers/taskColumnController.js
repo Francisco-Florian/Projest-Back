@@ -1,11 +1,12 @@
 const TaskColumn = require('../models').TaskColumn;
+const project = require('../models').Project;
 
 exports.createTaskColumn = async (req, res, next) => {
     try {
         const { taskColumnName } = req.body;
         const { idProject } = req.params;
 
-        // Vérifier que le projet existe et que l'utilisateur a les droits pour le projet
+        // Vérifier que le projet existe
         const existingColumns = await TaskColumn.findAll({
             where: { projectId: idProject },
         });
@@ -16,23 +17,23 @@ exports.createTaskColumn = async (req, res, next) => {
         );
 
         if (duplicateColumn) {
-            return res.status(400).json({ 
-                message: 'A column with the same name already exists in this project' 
+            return res.status(400).json({
+                message: 'A column with the same name already exists in this project'
             });
         }
 
         const taskColumnPosition = existingColumns.length + 1;
 
         // Créer la nouvelle colonne
-        const newTaskColumn = await TaskColumn.create({ 
-            projectId: idProject, 
-            taskColumnName, 
-            taskColumnPosition 
+        const newTaskColumn = await TaskColumn.create({
+            projectId: idProject,
+            taskColumnName,
+            taskColumnPosition
         });
 
-        res.status(201).json({ 
-            message: 'Task column created successfully', 
-            taskColumnId: newTaskColumn.id 
+        res.status(201).json({
+            message: 'Task column created successfully',
+            taskColumnId: newTaskColumn.id
         });
     } catch (err) {
         next(err);
@@ -44,20 +45,34 @@ exports.createTaskColumn = async (req, res, next) => {
 // crée les colonnes par défaut
 
 exports.createDefaultColumns = async (projectId) => {
-    // Vérifier si des colonnes existent déjà pour ce projet
-    const existingColumns = await TaskColumn.findAll({ where: { projectId } });
-    if (existingColumns.length === 0) {
-        // Créer les colonnes par défaut
-        const defaultColumns = [
-            { taskColumnName: 'To Do', taskColumnPosition: 1, projectId },
-            { taskColumnName: 'Doing', taskColumnPosition: 2, projectId },
-            { taskColumnName: 'Done', taskColumnPosition: 3, projectId },
-        ];
+    try {
+        // Récupérer le projet
+        const Project = await project.findByPk(projectId);
+        if (!Project) {
+            throw new Error('Project not found');
+        }
 
+        // Vérifier si le projet a été visité
+        if (!Project.hasVisitedProject) {
+            const existingColumns = await TaskColumn.findAll({ where: { projectId } });
+            if (existingColumns.length === 0) {
+                const defaultColumns = [
+                    { taskColumnName: 'To Do', taskColumnPosition: 1, projectId },
+                    { taskColumnName: 'Doing', taskColumnPosition: 2, projectId },
+                    { taskColumnName: 'Done', taskColumnPosition: 3, projectId },
+                ];
 
-        await TaskColumn.bulkCreate(defaultColumns);
+                await TaskColumn.bulkCreate(defaultColumns);
+
+                await Project.update({ hasVisitedProject: true });
+            }
+        }
+    } catch (error) {
+        console.error('Error in createDefaultColumns:', error.message);
+        throw error;
     }
 };
+
 
 // recuperer les colonnes
 

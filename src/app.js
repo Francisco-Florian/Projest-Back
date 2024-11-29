@@ -17,8 +17,7 @@ app.use(express.json());
 // Routes
 app.use('/api/auth', authRoutes);
 app.use('/api/projects', authMiddleware, projectRoutes);
-// app.use('/api/project/:projectId/column', authMiddleware, taskColumnRoute);
-// app.use('/api/project/:projectId/task', authMiddleware, taskRoutes);
+
 
 
 // Error handler

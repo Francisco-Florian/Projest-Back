@@ -2,23 +2,27 @@ const { Task } = require('../models');
 
 exports.createTask = async (req, res, next) => {
     try {
-        const { columnId, taskName, description, taskDeadline, taskOrder } = req.body;
-        /**
-         * Creates a new task with the specified details.
-         *
-         * @param {string} columnId - The ID of the column to which the task belongs.
-         * @param {string} taskName - The name of the task.
-         * @param {string} description - A brief description of the task.
-         * @param {Date} taskDeadline - The deadline for the task.
-         * @param {number} taskOrder - The order of the task within the column.
-         * @returns {Promise<Object>} The created task object.
-         */
-        const task = await Task.create({ columnId, taskName, description, taskDeadline, taskOrder });
+        const { columnId, content } = req.body;
+
+        if (!columnId || !content) {
+            return res.status(400).json({ message: 'columnId and content are required' });
+        }
+
+        const taskCount = await Task.count({ where: { columnId } });
+        const taskOrder = taskCount + 1;
+
+        const task = await Task.create({
+            columnId,
+            taskName: content,
+            taskOrder,
+        });
+
         res.status(201).json({ message: 'Task created successfully', taskId: task.id });
     } catch (err) {
         next(err);
     }
 };
+
 
 exports.getTask = async (req, res, next) => {
     try {

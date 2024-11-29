@@ -27,6 +27,11 @@ const Project = sequelize.define('project', {
         ]),
         allowNull: true,
     },
+    hasVisitedProject: {
+        type: DataTypes.BOOLEAN,
+        allowNull: false,
+        defaultValue: false,
+      },
 });
 
 module.exports = Project;
