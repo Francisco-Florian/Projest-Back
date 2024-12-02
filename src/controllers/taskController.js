@@ -16,10 +16,14 @@ exports.createTask = async (req, res, next) => {
             return res.status(404).json({ message: 'Column not found' });
         }
 
-        const duplicateTask = await Task.findOne({ where: { columnId, projectId } });
+        // Vérifier si une tâche avec le même nom existe déjà dans la colonne et le projet
+        const duplicateTask = await Task.findOne({
+            where: { columnId, projectId, taskName }
+        });
         if (duplicateTask) {
-            return res.status(400).json({ message: 'Task already exists in this column' });
+            return res.status(400).json({ message: 'Task with the same name already exists in this column' });
         }
+
 
         // Compter le nombre de tâches dans cette colonne
         const taskCount = await Task.count({ where: { columnId } });
@@ -50,25 +54,26 @@ exports.createTask = async (req, res, next) => {
 
 
 
-exports.getTask = async (req, res, next) => {
+exports.getTasks = async (req, res, next) => {
     try {
-        /**
-         * Retrieves a task by its primary key (ID).
-         *
-         * @param {Object} req - The request object.
-         * @param {Object} req.params - The parameters from the request.
-         * @param {string} req.params.id - The ID of the task to retrieve.
-         * @returns {Promise<Object|null>} The task object if found, otherwise null.
-         */
-        const task = await Task.findByPk(req.params.id);
-        if (!task) {
-            return res.status(404).json({ message: 'Task not found' });
-        }
-        res.status(200).json({ message: 'Task found', task });
+        const { idProject, idColumn } = req.params;
+
+        // Récupérer toutes les tâches liées à la colonne et au projet spécifiés
+        const tasks = await Task.findAll({
+            where: {
+                projectId: idProject,
+                columnId: idColumn,
+            },
+        });
+
+        // Retirer la vérification qui retourne 404 si aucune tâche n'est trouvée
+        res.status(200).json({ message: 'Tasks retrieved successfully', tasks });
     } catch (err) {
         next(err);
     }
 };
+
+
 
 exports.updateTask = async (req, res, next) => {
     try {
