@@ -58,15 +58,15 @@ exports.getTasks = async (req, res, next) => {
     try {
         const { idProject, idColumn } = req.params;
 
-        // Récupérer toutes les tâches liées à la colonne et au projet spécifiés
+        // Récupérer toutes les tâches liées à la colonne et au projet spécifiés, en les triant par taskOrder
         const tasks = await Task.findAll({
             where: {
                 projectId: idProject,
                 columnId: idColumn,
             },
+            order: [['taskOrder', 'ASC']], // Ajoutez cette ligne pour trier par `taskOrder`
         });
 
-        // Retirer la vérification qui retourne 404 si aucune tâche n'est trouvée
         res.status(200).json({ message: 'Tasks retrieved successfully', tasks });
     } catch (err) {
         next(err);
@@ -75,34 +75,41 @@ exports.getTasks = async (req, res, next) => {
 
 
 
+
 exports.updateTask = async (req, res, next) => {
     try {
-        // Extraire les informations de la requête
-        const { taskName, description, taskDeadline, taskOrder } = req.body;
+        const { taskName, description, taskDeadline } = req.body;
+        const { idTask } = req.params;
 
-        // Récupérer la tâche par son ID
-        const task = await Task.findByPk(req.params.id);
+        // Trouver la tâche par son ID
+        const task = await Task.findByPk(idTask);
         if (!task) {
             return res.status(404).json({ message: 'Task not found' });
         }
 
-        // Mettre à jour uniquement les champs fournis
-        const updatedFields = {};
-        if (taskName !== undefined) updatedFields.taskName = taskName;
-        if (description !== undefined) updatedFields.description = description;
-        if (taskDeadline !== undefined) updatedFields.taskDeadline = taskDeadline;
-        if (taskOrder !== undefined) updatedFields.taskOrder = taskOrder;
+        // Créer un objet qui contient uniquement les champs fournis à mettre à jour
+        const updatedFields = {
+            ...(taskName !== undefined && { taskName }),
+            ...(description !== undefined && { description }),
+            ...(taskDeadline !== undefined && { taskDeadline }),
+        };
 
-        // Mise à jour de la tâche
+        // Mise à jour de la tâche avec les champs spécifiés (sans toucher à `taskOrder` si non spécifié)
         await task.update(updatedFields);
 
-        // Retourner la réponse
+        // Retourner la tâche mise à jour
         res.status(200).json({ message: 'Task updated successfully', task });
     } catch (err) {
         console.error('Error updating task:', err);
         next(err);
     }
 };
+
+
+
+
+
+
 
 
 
