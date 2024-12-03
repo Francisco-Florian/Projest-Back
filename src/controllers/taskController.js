@@ -101,21 +101,25 @@ exports.updateTask = async (req, res, next) => {
 
 exports.deleteTask = async (req, res, next) => {
     try {
-        /**
-         * Retrieves a task by its primary key (ID) from the database.
-         *
-         * @param {Object} req - The request object.
-         * @param {Object} req.params - The parameters from the request.
-         * @param {string} req.params.id - The ID of the task to retrieve.
-         * @returns {Promise<Object|null>} A promise that resolves to the task object if found, or null if not found.
-         */
-        const task = await Task.findByPk(req.params.id);
+        const { idTask } = req.params;
+
+        if (!idTask) {
+            return res.status(400).json({ message: 'Task ID is required' });
+        }
+
+        const task = await Task.findByPk(idTask);
         if (!task) {
             return res.status(404).json({ message: 'Task not found' });
         }
+
         await task.destroy();
+
         res.status(200).json({ message: 'Task deleted successfully' });
     } catch (err) {
+        console.error("Error in deleteTask controller:", err);
         next(err);
     }
 };
+
+
+
