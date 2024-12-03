@@ -21,7 +21,7 @@ router.delete('/:idProject/columns/:idColumn', authMiddleware, taskColumnControl
 // Tasks
 router.post('/:idProject/columns/:idColumn/tasks', authMiddleware, taskController.createTask);
 router.get('/:idProject/columns/:idColumn/tasks', authMiddleware, taskController.getTasks);
-// router.patch('/:idProject/columns/:idColumn/tasks/:idTask', authMiddleware, taskColumnController.updateTaskColumn);
+router.patch('/:idProject/columns/:idColumn/tasks/:idTask', authMiddleware, taskController.updateTask);
 router.delete('/:idProject/columns/:idColumn/tasks/:idTask', authMiddleware, taskController.deleteTask);
 
 

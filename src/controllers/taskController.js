@@ -77,27 +77,35 @@ exports.getTasks = async (req, res, next) => {
 
 exports.updateTask = async (req, res, next) => {
     try {
-        /**
-         * Extracts task details from the request body.
-         * 
-         * @param {Object} req - The request object.
-         * @param {Object} req.body - The body of the request.
-         * @param {string} req.body.taskName - The name of the task.
-         * @param {string} req.body.description - The description of the task.
-         * @param {string} req.body.taskDeadline - The deadline of the task.
-         * @param {number} req.body.taskOrder - The order of the task.
-         */
+        // Extraire les informations de la requête
         const { taskName, description, taskDeadline, taskOrder } = req.body;
+
+        // Récupérer la tâche par son ID
         const task = await Task.findByPk(req.params.id);
         if (!task) {
             return res.status(404).json({ message: 'Task not found' });
         }
-        task.update({ taskName, description, taskDeadline, taskOrder });
+
+        // Mettre à jour uniquement les champs fournis
+        const updatedFields = {};
+        if (taskName !== undefined) updatedFields.taskName = taskName;
+        if (description !== undefined) updatedFields.description = description;
+        if (taskDeadline !== undefined) updatedFields.taskDeadline = taskDeadline;
+        if (taskOrder !== undefined) updatedFields.taskOrder = taskOrder;
+
+        // Mise à jour de la tâche
+        await task.update(updatedFields);
+
+        // Retourner la réponse
         res.status(200).json({ message: 'Task updated successfully', task });
     } catch (err) {
+        console.error('Error updating task:', err);
         next(err);
     }
 };
+
+
+
 
 exports.deleteTask = async (req, res, next) => {
     try {

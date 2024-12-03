@@ -7,12 +7,25 @@ const taskRoutes = require('./routes/taskRoutes');
 const taskColumnRoute = require('./routes/taskColumnRoute');
 const errorHandler = require('./middleware/errorHandler');
 const sequelize = require('./config/database');
+const helmet = require("helmet")
+const rateLimit = require('express-rate-limit');
 
 
 const app = express();
 
 app.use(cors());
 app.use(express.json());
+app.use(helmet())
+
+const limiter = rateLimit({
+    windowMs: 1 * 60 * 1000,
+    max: 70,
+    standardHeaders: true,
+    legacyHeaders: false,
+    message: 'Too many requests from this IP, please try again after a minute'
+});
+
+app.use(limiter);
 
 // Routes
 app.use('/api/auth', authRoutes);
