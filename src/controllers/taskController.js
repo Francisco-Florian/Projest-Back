@@ -78,13 +78,49 @@ exports.getTasks = async (req, res, next) => {
 
 exports.updateTask = async (req, res, next) => {
     try {
-        const { taskName, description, taskDeadline } = req.body;
+        const { taskName, description, taskDeadline, columnId } = req.body;
         const { idTask } = req.params;
 
         // Trouver la tâche par son ID
         const task = await Task.findByPk(idTask);
         if (!task) {
             return res.status(404).json({ message: 'Task not found' });
+        }
+
+        // Si la colonne a changé, réorganiser les tâches
+        if (columnId && task.columnId !== columnId) {
+            const originalColumnId = task.columnId;
+
+            // Réorganiser les tâches restantes dans la colonne d'origine
+            const tasksInOriginalColumn = await Task.findAll({
+                where: {
+                    columnId: originalColumnId,
+                },
+                order: [['taskOrder', 'ASC']],
+            });
+
+            // Réattribuer l'ordre des tâches restantes dans la colonne d'origine
+            let currentOrder = 1;
+            for (let currentTask of tasksInOriginalColumn) {
+                if (currentTask.id !== task.id) {
+                    await currentTask.update({ taskOrder: currentOrder });
+                    currentOrder++;
+                }
+            }
+
+            // Déplacer la tâche vers la nouvelle colonne
+            task.columnId = columnId;
+
+            // Définir le nouvel ordre de la tâche dans la nouvelle colonne
+            const tasksInNewColumn = await Task.findAll({
+                where: {
+                    columnId: columnId,
+                },
+                order: [['taskOrder', 'DESC']],
+            });
+
+            // Définir le `taskOrder` comme étant le plus grand `taskOrder` + 1, ou 1 s'il n'y a pas de tâche
+            task.taskOrder = tasksInNewColumn.length > 0 ? tasksInNewColumn[0].taskOrder + 1 : 1;
         }
 
         // Créer un objet qui contient uniquement les champs fournis à mettre à jour
@@ -94,8 +130,8 @@ exports.updateTask = async (req, res, next) => {
             ...(taskDeadline !== undefined && { taskDeadline }),
         };
 
-        // Mise à jour de la tâche avec les champs spécifiés (sans toucher à `taskOrder` si non spécifié)
-        await task.update(updatedFields);
+        // Mise à jour de la tâche avec les champs spécifiés (y compris `columnId` et `taskOrder` s'ils ont changé)
+        await task.update({ ...updatedFields, columnId: task.columnId, taskOrder: task.taskOrder });
 
         // Retourner la tâche mise à jour
         res.status(200).json({ message: 'Task updated successfully', task });
@@ -104,11 +140,6 @@ exports.updateTask = async (req, res, next) => {
         next(err);
     }
 };
-
-
-
-
-
 
 
 
