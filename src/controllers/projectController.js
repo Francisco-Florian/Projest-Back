@@ -1,5 +1,4 @@
-const { Project } = require('../models');
-const TaskColumn = require('../models').TaskColumn;
+const { Project, Task, TaskColumn } = require('../models');
 
 exports.createProject = async (req, res, next) => {
     try {
@@ -101,16 +100,29 @@ exports.deleteProject = async (req, res, next) => {
     try {
         const project = await Project.findOne({
             where: {
-                id: req.params.id,
-                createdBy: req.user.id
-            }
+                id: req.params.idProject,
+                createdBy: req.user.id,
+            },
         });
+
         if (!project) {
             return res.status(404).json({ message: 'Project not found' });
         }
+
+        const columns = await TaskColumn.findAll({ where: { projectId: project.id } });
+
+        for (const column of columns) {
+            await Task.destroy({ where: { columnId: column.id } });
+        }
+
+        await TaskColumn.destroy({ where: { projectId: project.id } });
+
         await project.destroy();
+
         res.status(200).json({ message: 'Project deleted successfully' });
     } catch (err) {
+        console.error("Error in deleteProject controller:", err);
         next(err);
     }
 };
+

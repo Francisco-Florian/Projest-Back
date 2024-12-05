@@ -1,4 +1,4 @@
-const TaskColumn = require('../models').TaskColumn;
+const {TaskColumn, Task} = require('../models');
 const project = require('../models').Project;
 
 exports.createTaskColumn = async (req, res, next) => {
@@ -129,6 +129,10 @@ exports.updateTaskColumn = async (req, res, next) => {
 exports.deleteTaskColumn = async (req, res, next) => {
     try {
         const Project = await project.findByPk(req.params.idProject);
+        if (!Project) {
+            return res.status(404).json({ message: 'Project not found' });
+        }
+
         const column = await TaskColumn.findOne({
             where: {
                 id: req.params.idColumn,
@@ -138,11 +142,19 @@ exports.deleteTaskColumn = async (req, res, next) => {
         if (!column) {
             return res.status(404).json({ message: 'Task column not found' });
         }
+
+        await Task.destroy({
+            where: {
+                columnId: req.params.idColumn,
+            },
+        });
+
         await column.destroy();
-        res.status(200).json({ message: 'Task column deleted successfully' });
 
         Project.changed('updatedAt', true);
         await Project.save();
+
+        res.status(200).json({ message: 'Task column and associated tasks deleted successfully' });
     } catch (err) {
         next(err);
     }

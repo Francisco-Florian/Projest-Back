@@ -64,7 +64,7 @@ exports.getTasks = async (req, res, next) => {
                 projectId: idProject,
                 columnId: idColumn,
             },
-            order: [['taskOrder', 'ASC']], // Ajoutez cette ligne pour trier par `taskOrder`
+            order: [['taskOrder', 'ASC']], // Trier par `taskOrder`
         });
 
         res.status(200).json({ message: 'Tasks retrieved successfully', tasks });
