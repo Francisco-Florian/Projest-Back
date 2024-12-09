@@ -47,7 +47,7 @@ const User = sequelize.define('user', {
         validate: {
             notEmpty: true
         }
-    }
+    },
 });
 
 User.beforeCreate(async (user) => {
