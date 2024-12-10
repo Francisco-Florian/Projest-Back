@@ -7,23 +7,41 @@ sgMail.setApiKey(process.env.SENDGRID_API_KEY);
 exports.register = async (req, res, next) => {
     try {
         const { email, password } = req.body;
-        /**
-         * Finds an existing user in the database by email.
-         *
-         * @param {Object} User - The User model.
-         * @param {Object} email - The email address to search for.
-         * @returns {Promise<Object|null>} - A promise that resolves to the user object if found, or null if not found.
-         */
+
+        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+        const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/;
+
+        if (!emailRegex.test(email)) {
+            return res.status(400).json({
+                message: 'Invalid email format',
+                field: 'email',
+            });
+        }
+
+        if (!passwordRegex.test(password)) {
+            return res.status(400).json({
+                message: 'Password must be at least 8 characters long and include at least one uppercase letter, one lowercase letter, one number, and one special character.',
+                field: 'password',
+            });
+        }
+
         const existingUser = await User.findOne({ where: { email } });
         if (existingUser) {
-            return res.status(400).json({ message: 'Email already exists' });
+            return res.status(400).json({
+                message: 'Email Or password is incorrect',
+                field: 'email',
+            });
         }
+
         const user = await User.create({ email, password });
-        res.status(201).json({message : 'User created successfully', userId: user.id});
+        res.status(201).json({ message: 'User created successfully', userId: user.id });
     } catch (err) {
         next(err);
     }
 };
+
+
 
 exports.login = async (req, res, next) => {
     try {
