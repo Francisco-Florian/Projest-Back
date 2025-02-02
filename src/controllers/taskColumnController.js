@@ -113,7 +113,7 @@ exports.getTaskColumnById = async (req, res, next) => {
 exports.updateTaskColumn = async (req, res, next) => {
     try {
         const { taskColumnName, taskColumnPosition } = req.body;
-        const column = await TaskColumn.findByPk(req.params.id);
+        const column = await TaskColumn.findByPk(req.params.idColumn);
         if (!column) {
             return res.status(404).json({ message: 'Task column not found' });
         }
